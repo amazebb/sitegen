@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+@include(head.html)@
+  <title>@TITLE@ manual</title>
+</head>
+<body>
+<main>
+
+@include(nav.html)@
+
+  <section id="manual">
+    <h2>Manual</h2>
+    <p class="lede">The <code>@TITLE@</code> man page. <button class="linkbtn" id="man-all" type="button">expand everything</button> to search it with the browser.</p>
+    <div class="man">
+@MAN@    </div>
+  </section>
+
+</main>
+@include(foot.html)@
+</body>
+</html>

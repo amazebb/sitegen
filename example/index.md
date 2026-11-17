@@ -1,7 +1,7 @@
 ---
 title: example
 description: A minimal site built with sitegen.
-intro: A **minimal** site built with [sitegen](../docs/SITEGEN.md): this page is `index.md`, the manual is `example.1`.
+intro: A **minimal** site built with [sitegen](../): this page is `index.md`, the manual is `example.1`.
 ---
 
 ## Features {#features .cards}

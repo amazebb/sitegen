@@ -16,6 +16,6 @@ make example   # build example/public/
 make check     # both, plus a dead-link test
 ```
 
-Read [`docs/SITEGEN.md`](docs/SITEGEN.md) (or the built page, `docs/index.html`). `man2html` needs `mandoc`; everything else needs only Python 3.
+Read [`docs/SITEGEN.md`](docs/SITEGEN.md), or the published page at https://amazebb.github.io/sitegen/ (the example site is at `/example/`). A workflow builds both and deploys them to GitHub Pages. `man2html` needs `mandoc`; everything else needs only Python 3.
 
 MIT licensed, see `LICENSE`.

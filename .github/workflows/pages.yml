@@ -1,0 +1,45 @@
+# Publish the reference (docs/) at the site root and the example site under /example/.
+# GitHub Pages cannot serve an arbitrary folder, so this builds both and uploads an assembled one.
+name: Pages
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install mandoc
+        run: sudo apt-get update && sudo apt-get install -y mandoc
+      - name: Build both sites and reject dead links
+        run: make check
+      - name: Assemble the site
+        run: |
+          mkdir -p _site/example
+          cp -R docs/index.html docs/style.css docs/script.js docs/img _site/
+          cp -R example/public/. _site/example/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

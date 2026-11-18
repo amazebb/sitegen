@@ -133,6 +133,7 @@ With `-a man.html`, an inline code span that is exactly `ENV_VAR` or `ENV_VAR=va
 | `.fold` | `details` container | muted clickable summary |
 | `.note` | note container | small muted text |
 | `.nowrap` | code such as `-lncurses` | no line break inside |
+| `.flash` | element a link just landed on (added by `script.js`) | accent tint that fades out |
 
 ## man2html {#man2html}
 

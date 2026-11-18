@@ -71,6 +71,21 @@ if (themeBtn) {
   });
 }
 
+// A brief highlight on the element a link lands on: a section's title, a key's whole table row.
+// A link that lands at the top of the screen is where people look, so only the others flash.
+// Where the jump ends is worked out from the layout (not measured mid-scroll): the element's
+// page position, limited by how far the page can scroll.
+const flash = (target) => {
+  const el = target.matches('details') ? target.querySelector(':scope > summary') : (target.closest('tr') || target);
+  const y = el.getBoundingClientRect().top + window.scrollY;
+  const maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+  if (y - Math.min(Math.max(y, 0), maxY) < 120) return;
+  el.classList.remove('flash');
+  void el.offsetWidth;
+  el.classList.add('flash');
+  el.addEventListener('animationend', () => el.classList.remove('flash'), { once: true });
+};
+
 // Deep links into the manual: open the collapsed sections around the target, then scroll to it.
 const openTarget = () => {
   if (!location.hash) return;
@@ -79,6 +94,7 @@ const openTarget = () => {
   if (!el) return;
   for (let d = el.closest('details'); d; d = d.parentElement && d.parentElement.closest('details')) d.open = true;
   el.scrollIntoView();
+  flash(el);
 };
 openTarget();
 window.addEventListener('hashchange', openTarget);

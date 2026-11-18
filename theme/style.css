@@ -281,3 +281,9 @@ html[data-shot="light"] img.th-light { display: block; }
 html[data-shot="light"] img.th-dark { display: none; }
 
 .shot figcaption { margin-top: 10px; font-size: 14px; color: var(--muted); }
+
+/* ---------- link landing highlight ---------- */
+@keyframes landing { from { background: color-mix(in srgb, var(--accent) 28%, transparent); } to { background: transparent; } }
+.flash, tr.flash > td { animation: landing 1.8s ease-out; }
+.flash { border-radius: 4px; }
+@media (prefers-reduced-motion: reduce) { .flash, tr.flash > td { animation: none; } }

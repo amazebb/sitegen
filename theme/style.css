@@ -213,7 +213,10 @@ details.fold summary:hover { color: var(--ink); }
 .man-body p { margin: 0 0 10px; max-width: 74ch; }
 .man-body h3 { font: 600 15px var(--serif); margin: 18px 0 6px; }
 .man-body code, .man-body var, .man-body .Fl { font-family: var(--mono); font-size: 0.9em; font-style: normal; }
-.man-body pre, .man-body .Bd { font: 13.5px/1.5 var(--mono); background: var(--code-bg); border-radius: 8px; padding: 10px 12px; margin: 0 0 12px; overflow-x: auto; white-space: pre-wrap; }
+.man-body .Pa { font-family: var(--mono); font-size: 0.9em; font-style: normal; background: var(--code-bg); border-radius: 4px; padding: 1px 6px; overflow-wrap: anywhere; }
+.man-body pre, .man-body .Bd.Li { font: 13.5px/1.5 var(--mono); background: var(--code-bg); border-radius: 8px; padding: 10px 12px; margin: 0 0 12px; overflow-x: auto; white-space: pre-wrap; }
+.man-body .Bd.Li { white-space: normal; }
+.man-body .Bd pre { margin: 0; padding: 0; background: none; border-radius: 0; overflow: visible; }
 .man-body .table-wrap { margin: 0 0 12px; border-radius: 0; background: none; }
 .man-body table { width: 100%; font-size: 14.5px; }
 .man-body th, .man-body td { padding: 6px 14px; border: 0; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
@@ -222,6 +225,9 @@ details.fold summary:hover { color: var(--ink); }
 .man-body tbody tr:nth-child(even) td { background: color-mix(in srgb, currentColor 4%, transparent); }
 .man-body tr:last-child td { border-bottom: 0; }
 .man-body dl, .man-body .Bl-tag { margin: 0 0 12px; }
+.man-body ul, .man-body ol { margin: 0 0 12px; padding-left: 22px; }
+.man-body li { margin: 2px 0; }
+.man-body .Bd-indent { margin-left: 22px; }
 .man-body .Bl-tag dt { font-family: var(--mono); font-size: 14px; margin-top: 8px; }
 .man-body .Bl-tag dd { margin: 2px 0 0 18px; }
 .man-body a { color: var(--accent); text-underline-offset: 3px; overflow-wrap: anywhere; }

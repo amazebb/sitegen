@@ -86,6 +86,16 @@ def kbd(t):
     return f"<kbd>{html.escape(t, quote=False)}</kbd>"
 
 
+LITERAL = re.compile(r'(<div class="Bd[^"]*? Li">\s*<pre>)(.*?)(</pre>)', re.DOTALL)
+
+
+def dedent(m):
+    """Drop the source's leading blank lines and the indent every line of a literal block shares."""
+    lines = m.group(2).strip("\n").split("\n")
+    pad = min((len(l) - len(l.lstrip(" ")) for l in lines if l.strip()), default=0)
+    return m.group(1) + "\n".join(l[pad:] for l in lines) + m.group(3)
+
+
 def split_cells(line, seps):
     """Cut a line at the columns of the rule's `+`, counting an entity as one column, a tag as none."""
     cells, col = [""], 0
@@ -145,7 +155,12 @@ def convert(frag):
     frag = re.sub(r'<p class="Pp">(<code class="Fl">-([A-Za-z0-9]+)</code>)', r'<p class="Pp" id="opt-\2">\1', frag)
     # a single bold-italic letter (\\f(BIx) marks an underlined mnemonic key
     frag = re.sub(r"<b><i>(.)</i></b>", r"<b><u>\1</u></b>", frag)
+    # a line that starts with spaces breaks the line, which at the top of a paragraph is a blank first line
+    frag = re.sub(r'(<p class="Pp"[^>]*>)\s*<br/>\s*', r'\1', frag)
+    # a key in brackets (.Bq Ic X) is drawn as a key
+    frag = re.sub(r'\[<code class="Ic">(.*?)</code>\]', r'<kbd>\1</kbd>', frag)
     frag = TABLE.sub(table, frag)
+    frag = LITERAL.sub(dedent, frag)
     frag = autolink(frag)
     out = ""
     for sh in frag.split('<section class="Sh">')[1:]:

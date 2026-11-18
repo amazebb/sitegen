@@ -150,6 +150,7 @@ It runs `mandoc -Thtml -O fragment` (install `mandoc`) and rebuilds the result a
 | a paragraph starting `\fBVAR:\fR` | the paragraph gets `id="VAR"` |
 | a paragraph starting with `.Fl x` | the paragraph gets `id="opt-x"` |
 | one bold-italic letter, `\f(BIX\fR` | an underlined mnemonic key, the letter in `<u>` |
+| a literal block with a ` A \| B` header and a `___ + ___` rule under it | `div.table-wrap` table with one column per `\|`; a row with an empty first cell continues the one above; with `Key` as first header the keys (split at `, `) are `<kbd>` |
 | a bare `https://...` | a link |
 
 Permalink anchors from mandoc are dropped. A link to a closed section still works: `script.js` opens the sections around the target.

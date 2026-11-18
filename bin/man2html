@@ -11,7 +11,8 @@ usage: man2html [-T TEMPLATE] [-t TITLE] [-o OUT] MANFILE
 Each top-level section (.Sh) becomes <details class="man-sec"> and each
 subsection (.Ss) a nested <details class="man-sub">; NAME and SYNOPSIS start
 open. The markup inside comes from `mandoc -Thtml -O fragment` with the permalink
-anchors removed and bare URLs linked. Style it from the template's stylesheet.
+anchors removed and bare URLs linked. A literal block laid out as ` A | B | C` with a
+`___ + ___ + ___` rule under the header becomes a table (a `Key` first column gets <kbd> keys). Style it from the template's stylesheet.
 Sections get slug ids (#keybinds), environment variable paragraphs their name (#NNN_PILL) and
 flag paragraphs opt-<flag> (#opt-G), so pages can link to them.
 """
@@ -74,6 +75,66 @@ def autolink(frag):
     return "".join(out)
 
 
+TABLE = re.compile(
+    r'<div class="Bd[^"]*? Li">\s*<pre>\n?([^\n]*\|[^\n]*)\n(_+(?: \+ _+)+)\n(.*?)</pre>\s*</div>', re.DOTALL)
+TOKEN = re.compile(r"<[^>]+>|&#?\w+;|.")
+
+
+def kbd(t):
+    if t == ";;":
+        return "<kbd>;</kbd><kbd>;</kbd>"
+    return f"<kbd>{html.escape(t, quote=False)}</kbd>"
+
+
+def split_cells(line, seps):
+    """Cut a line at the columns of the rule's `+`, counting an entity as one column, a tag as none."""
+    cells, col = [""], 0
+    for tok in TOKEN.findall(line):
+        if tok.startswith("<"):
+            cells[-1] += tok
+            continue
+        if col in seps:
+            cells.append("")
+        else:
+            cells[-1] += tok
+        col += 1
+    return [c.strip() for c in cells]
+
+
+def table(m):
+    """A literal block with a ` A | B` header and a `___ + ___` rule under it becomes a table.
+
+    Columns are cut where the rule has its `+`, so a cell may contain `|`. A row with an empty first
+    cell, or with every other cell empty, continues the row above. With the first header `Key`, that
+    column is drawn as <kbd> keys.
+    """
+    seps = {i for i, ch in enumerate(m.group(2)) if ch == "+"}
+    head = split_cells(m.group(1), seps)
+    n = len(head)
+    rows = []
+    for line in m.group(3).split("\n"):
+        if not line.strip() or line.startswith("__"):
+            continue
+        cells = split_cells(line, seps)
+        cells += [""] * (n - len(cells))
+        if rows and (not cells[0] or not any(cells[1:])):
+            for i, c in enumerate(cells):
+                if c:
+                    rows[-1][i] = (rows[-1][i] + " " + c).strip()
+        else:
+            rows.append(cells)
+    keys = head[0] == "Key"
+    body = ""
+    for row in rows:
+        if keys:
+            plain = html.unescape(re.sub(r"<[^>]+>", "", row[0]))
+            row[0] = ", ".join(kbd(k) for k in re.split(r", +", plain))
+        body += "<tr>" + "".join(f"<td>{c}</td>" for c in row) + "</tr>\n"
+    th = "".join(f"<th>{h}</th>" for h in head)
+    return (f'<div class="table-wrap"><table>\n<thead><tr>{th}</tr></thead>\n'
+            f"<tbody>\n{body}</tbody>\n</table></div>")
+
+
 def convert(frag):
     frag = frag[frag.index('<section class="Sh">'):].split('<table class="foot">')[0]
     # no self-links: drop mandoc's permalink anchors and the ids they point at
@@ -84,6 +145,7 @@ def convert(frag):
     frag = re.sub(r'<p class="Pp">(<code class="Fl">-([A-Za-z0-9]+)</code>)', r'<p class="Pp" id="opt-\2">\1', frag)
     # a single bold-italic letter (\\f(BIx) marks an underlined mnemonic key
     frag = re.sub(r"<b><i>(.)</i></b>", r"<b><u>\1</u></b>", frag)
+    frag = TABLE.sub(table, frag)
     frag = autolink(frag)
     out = ""
     for sh in frag.split('<section class="Sh">')[1:]:

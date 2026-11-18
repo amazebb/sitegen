@@ -82,3 +82,19 @@ const openTarget = () => {
 };
 openTarget();
 window.addEventListener('hashchange', openTarget);
+
+// Keep the address in step with the section you last opened by hand, so Back returns to it
+// instead of to an older deep link. Replacing the entry adds no history of its own.
+document.addEventListener('click', (e) => {
+  const sum = e.target.closest('details.man-sec > summary, details.man-sub > summary');
+  if (!sum) return;
+  const d = sum.parentElement;
+  setTimeout(() => {
+    let id = d.open ? d.id : '';
+    if (!id) {
+      const p = d.parentElement && d.parentElement.closest('details');
+      if (p && p.open) id = p.id;
+    }
+    try { history.replaceState(history.state, '', location.pathname + location.search + (id ? '#' + id : '')); } catch (err) {}
+  }, 0);
+});

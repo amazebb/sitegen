@@ -6,7 +6,7 @@ intro: Write the page text in **markdown** and the reference in a **man page**; 
 
 ## Overview {#overview}
 
-A site is a few source files, a template shell and a copy of the shared theme. The generators fill the shell and write plain HTML, so the result can be served from GitHub Pages as is.
+A site is a few source files, a template shell and a copy of the shared theme. The generators fill the shell and write plain HTML, so the result can be served as is by anything that serves static files: GitHub Pages, Netlify, S3, nginx, or a local `python3 -m http.server`.
 
 | Source | Tool | Output |
 | --- | --- | --- |
@@ -21,7 +21,7 @@ The generated `.html` files are build output: edit the sources and rebuild, neve
 Copy `example/` as the start of a site, then:
 
 ```sh
-# theme files go next to the pages (Pages serves one folder)
+# theme files go next to the pages, so one folder is the whole site
 cp theme/style.css theme/script.js site/
 cp theme/icons.svg site/img/icons.svg
 # man page first, then the page that links into it

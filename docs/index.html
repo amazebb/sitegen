@@ -32,7 +32,7 @@
 
 <section id="overview">
 <h2>Overview</h2>
-<p class="lede">A site is a few source files, a template shell and a copy of the shared theme. The generators fill the shell and write plain HTML, so the result can be served from GitHub Pages as is.</p>
+<p class="lede">A site is a few source files, a template shell and a copy of the shared theme. The generators fill the shell and write plain HTML, so the result can be served as is by anything that serves static files: GitHub Pages, Netlify, S3, nginx, or a local <code>python3 -m http.server</code>.</p>
 <div class="table-wrap">
 <table>
 <thead><tr><th>Source</th><th>Tool</th><th>Output</th></tr></thead>
@@ -50,7 +50,7 @@
 <p class="lede">Copy <code>example/</code> as the start of a site, then:</p>
 <div class="codeblock">
 <button class="copy" type="button">Copy</button>
-<pre># theme files go next to the pages (Pages serves one folder)
+<pre># theme files go next to the pages, so one folder is the whole site
 cp theme/style.css theme/script.js site/
 cp theme/icons.svg site/img/icons.svg
 # man page first, then the page that links into it

@@ -87,17 +87,32 @@ const flash = (target) => {
 };
 
 // Deep links into the manual: open the collapsed sections around the target, then scroll to it.
+// Going Back to an entry whose scroll position was saved (see below) returns to that exact spot.
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 const openTarget = () => {
   if (!location.hash) return;
   let el = null;
   try { el = document.getElementById(decodeURIComponent(location.hash.slice(1))); } catch (e) {}
   if (!el) return;
   for (let d = el.closest('details'); d; d = d.parentElement && d.parentElement.closest('details')) d.open = true;
+  const saved = history.state && history.state.y;
+  if (typeof saved === 'number') {
+    window.scrollTo({ top: saved, behavior: 'instant' });
+    return;
+  }
   el.scrollIntoView();
   flash(el);
 };
 openTarget();
 window.addEventListener('hashchange', openTarget);
+
+// Remember where you were when you follow a link on the page, so Back lands there and not at the
+// top of the section that was open.
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('a[href^="#"]');
+  if (!a) return;
+  try { history.replaceState({ ...(history.state || {}), y: window.scrollY }, '', location.href); } catch (err) {}
+});
 
 // Keep the address in step with the section you last opened by hand, so Back returns to it
 // instead of to an older deep link. Replacing the entry adds no history of its own.

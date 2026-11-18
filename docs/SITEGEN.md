@@ -151,7 +151,7 @@ It runs `mandoc -Thtml -O fragment` (install `mandoc`) and rebuilds the result a
 | a paragraph starting with `.Fl x` | the paragraph gets `id="opt-x"` |
 | one bold-italic letter, `\f(BIX\fR` | an underlined mnemonic key, the letter in `<u>` |
 | a literal block with a ` A \| B` header and a `___ + ___` rule under it | `div.table-wrap` table with one column per `\|`; a row with an empty first cell continues the one above; with `Key` as first header the keys (split at `, `) are `<kbd>` |
-| a bold or `.Fl` flag such as `-y`, a bold `ENV_VAR`, or a bold section name such as `ENVIRONMENT` | a link to its definition paragraph or section (`#opt-y`, `#ENV_VAR`, `#environment`); the definition itself is not linked |
+| a bold or `.Fl` flag such as `-y`, a bold `ENV_VAR` or `ENV_VAR=value` (the whole span is the link), or a bold section name such as `ENVIRONMENT` | a link to its definition paragraph or section (`#opt-y`, `#ENV_VAR`, `#environment`); the definition itself is not linked |
 | an inline `.Ic y` key | `<kbd>y</kbd>`, linked to the row that lists that key in a `Key` table (each key listed there gets `id="key-y"`; the first table to list a key owns it) |
 | a bare `https://...` | a link |
 

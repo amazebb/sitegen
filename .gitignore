@@ -1,2 +1,6 @@
 example/public/
 .DS_Store
+docs/index.html
+docs/style.css
+docs/script.js
+docs/img/

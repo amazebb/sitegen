@@ -137,7 +137,7 @@ With `-a man.html`, an inline code span that is exactly `ENV_VAR` or `ENV_VAR=va
 ## man2html {#man2html}
 
 ```sh
-man2html [-T TEMPLATE] [-t TITLE] [-o OUT] MANFILE
+man2html [-T TEMPLATE] [-t TITLE] [-o OUT] [-s] MANFILE
 ```
 
 It runs `mandoc -Thtml -O fragment` (install `mandoc`) and rebuilds the result as collapsible sections. The default title is `name(section)`, so `nnn.1` becomes `nnn(1)`; the default output is the man file with `.html` appended.
@@ -151,9 +151,11 @@ It runs `mandoc -Thtml -O fragment` (install `mandoc`) and rebuilds the result a
 | a paragraph starting with `.Fl x` | the paragraph gets `id="opt-x"` |
 | one bold-italic letter, `\f(BIX\fR` | an underlined mnemonic key, the letter in `<u>` |
 | a literal block with a ` A \| B` header and a `___ + ___` rule under it | `div.table-wrap` table with one column per `\|`; a row with an empty first cell continues the one above; with `Key` as first header the keys (split at `, `) are `<kbd>` |
-| a bold or `.Fl` flag such as `-y`, or a bold `ENV_VAR`, that has a definition paragraph | a link to that paragraph (`#opt-y`, `#ENV_VAR`); the definition itself is not linked |
+| a bold or `.Fl` flag such as `-y`, a bold `ENV_VAR`, or a bold section name such as `ENVIRONMENT` | a link to its definition paragraph or section (`#opt-y`, `#ENV_VAR`, `#environment`); the definition itself is not linked |
 | an inline `.Ic y` key | `<kbd>y</kbd>`, linked to the row that lists that key in a `Key` table (each key listed there gets `id="key-y"`; the first table to list a key owns it) |
 | a bare `https://...` | a link |
+
+`man2html` prints a warning on stderr for a table that did not convert (a header with `|` and a `___ + ___` rule that does not parse) and a "`SECTION` section" reference with no such section. `-s` makes the exit status 1 when there were any.
 
 Permalink anchors from mandoc are dropped. A link to a closed section still works: `script.js` opens the sections around the target.
 

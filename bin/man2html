@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Convert a mandoc man page into a page of collapsible sections.
 
-usage: man2html [-T TEMPLATE] [-t TITLE] [-o OUT] MANFILE
+usage: man2html [-T TEMPLATE] [-t TITLE] [-o OUT] [-s] MANFILE
 
   -T  page template; @TITLE@ and @MAN@ are replaced and @include(file)@ pulls in a file next to
       it (default: a minimal built-in page)
   -t  title (default: the file name as name(section), e.g. nnn.1 -> nnn(1))
   -o  output file (default: MANFILE with .html appended, e.g. nnn.1.html)
+  -s  exit 1 if there were warnings (an unconverted table, a section reference with no target)
 
 Each top-level section (.Sh) becomes <details class="man-sec"> and each
 subsection (.Ss) a nested <details class="man-sub">; NAME and SYNOPSIS start
@@ -78,6 +79,9 @@ def autolink(frag):
 TABLE = re.compile(
     r'<div class="Bd[^"]*? Li">\s*<pre>\n?([^\n]*\|[^\n]*)\n(_+(?: \+ _+)+)\n(.*?)</pre>\s*</div>', re.DOTALL)
 TOKEN = re.compile(r"<[^>]+>|&#?\w+;|.")
+
+
+WARNINGS = []  # problems found while converting, printed at the end
 
 
 KEYIDS = set()  # ids given to the keys of Key tables; the first table to list a key owns it
@@ -156,18 +160,25 @@ def table(m):
             f"<tbody>\n{body}</tbody>\n</table></div>")
 
 
-REF = re.compile(r'<b>(-[A-Za-z0-9]|[A-Z][A-Z0-9_]+)</b>|<code class="Fl">(-[A-Za-z0-9])</code>')
+REF = re.compile(r'<b>(-[A-Za-z0-9]|[A-Z][A-Z0-9_ ]*[A-Z0-9])</b>|<code class="Fl">(-[A-Za-z0-9])</code>')
 
 
 def link_refs(frag):
-    """Link a bold or .Fl flag (-y) and a bold ENV_VAR to the paragraph that defines it."""
+    """Link a bold or .Fl flag (-y), a bold ENV_VAR and a bold SECTION NAME to where it is defined."""
     ids = set(re.findall(r'<p class="Pp" id="((?:opt-[A-Za-z0-9]+)|[A-Z][A-Z0-9_]*)"', frag))
+    sections = {t: slug(t) for t in (re.sub(r"<[^>]+>", "", h).strip()
+                                      for h in re.findall(r'<h1 class="Sh"[^>]*>(.*?)</h1>', frag, re.DOTALL))}
 
     def sub(m):
         name = m.group(1) or m.group(2)
-        target = "opt-" + name[1:] if name.startswith("-") else name
+        target = "opt-" + name[1:] if name.startswith("-") else sections.get(name, name)
         before = frag[:m.start()]
-        if target not in ids or before.endswith(f'id="{target}">') or before.rfind("<a ") > before.rfind("</a>"):
+        if target not in ids and name not in sections:
+            after = frag[m.end():m.end() + 8]
+            if after.startswith(" section"):
+                WARNINGS.append(f"section reference {name} has no matching section")
+            return m.group(0)
+        if before.endswith(f'id="{target}">') or before.rfind("<a ") > before.rfind("</a>"):
             return m.group(0)
         return f'<a href="#{target}">{m.group(0)}</a>'
 
@@ -196,6 +207,10 @@ def convert(frag):
                   lambda m: f'<a href="#{keyid(html.unescape(m.group(1)))}">{kbd(m.group(1))}</a>'
                   if keyid(html.unescape(m.group(1))) in KEYIDS else kbd(html.unescape(m.group(1))), frag)
     frag = link_refs(frag)
+    for pre in re.findall(r"<pre>(.*?)</pre>", frag, re.DOTALL):
+        rows = pre.strip("\n").split("\n")
+        if len(rows) > 1 and "|" in rows[0] and re.fullmatch(r"[_=+ -]+", rows[1]):
+            WARNINGS.append(f"table not converted, check its header, rule and columns: {rows[0].strip()[:60]!r}")
     frag = autolink(frag)
     out = ""
     for sh in frag.split('<section class="Sh">')[1:]:
@@ -218,6 +233,7 @@ def main():
     ap.add_argument("-T", dest="template", help="page template with @TITLE@ and @MAN@")
     ap.add_argument("-t", dest="title", help="page title")
     ap.add_argument("-o", dest="out", help="output file")
+    ap.add_argument("-s", dest="strict", action="store_true", help="exit 1 if there were warnings")
     a = ap.parse_args()
 
     man = Path(a.manfile)
@@ -235,6 +251,10 @@ def main():
     dest = Path(a.out) if a.out else man.with_name(man.name + ".html")
     dest.write_text(page.replace("@TITLE@", html.escape(name, quote=False)).replace("@MAN@", convert(frag)))
     print(f"wrote {dest}")
+    for w in dict.fromkeys(WARNINGS):
+        print(f"man2html: warning: {w}", file=sys.stderr)
+    if a.strict and WARNINGS:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

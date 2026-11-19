@@ -88,7 +88,9 @@ const flash = (target) => {
 
 // Deep links into the manual: open the collapsed sections around the target, then scroll to it.
 // Going Back to an entry whose scroll position was saved (see below) returns to that exact spot.
-if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+// Only the manual does this itself; other pages keep the browser's own scroll restoration, so Back from
+// the manual returns to the spot you left on the page that linked to it.
+if (document.querySelector('.man') && 'scrollRestoration' in history) history.scrollRestoration = 'manual';
 const openTarget = () => {
   if (!location.hash) return;
   let el = null;

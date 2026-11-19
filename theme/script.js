@@ -97,9 +97,13 @@ const openTarget = () => {
   try { el = document.getElementById(decodeURIComponent(location.hash.slice(1))); } catch (e) {}
   if (!el) return;
   for (let d = el.closest('details'); d; d = d.parentElement && d.parentElement.closest('details')) d.open = true;
-  const saved = history.state && history.state.y;
-  if (typeof saved === 'number') {
-    window.scrollTo({ top: saved, behavior: 'instant' });
+  const st = history.state;
+  if (st && typeof st.y === 'number') {
+    // Put the link that was clicked back where it was on screen. A section opened since then may have
+    // moved it, so the saved page position (y) is only the fallback.
+    const link = typeof st.link === 'number' ? document.querySelectorAll('a[href^="#"]')[st.link] : null;
+    const top = link ? link.getBoundingClientRect().top + window.scrollY - st.top : st.y;
+    window.scrollTo({ top, behavior: 'instant' });
     return;
   }
   el.scrollIntoView();
@@ -113,7 +117,10 @@ window.addEventListener('hashchange', openTarget);
 document.addEventListener('click', (e) => {
   const a = e.target.closest('a[href^="#"]');
   if (!a) return;
-  try { history.replaceState({ ...(history.state || {}), y: window.scrollY }, '', location.href); } catch (err) {}
+  const link = Array.prototype.indexOf.call(document.querySelectorAll('a[href^="#"]'), a);
+  try {
+    history.replaceState({ ...(history.state || {}), y: window.scrollY, link, top: a.getBoundingClientRect().top }, '', location.href);
+  } catch (err) {}
 });
 
 // Keep the address in step with the section you last opened by hand, so Back returns to it
@@ -130,4 +137,30 @@ document.addEventListener('click', (e) => {
     }
     try { history.replaceState(history.state, '', location.pathname + location.search + (id ? '#' + id : '')); } catch (err) {}
   }, 0);
+});
+
+// Click a table header to sort the table by that column, A to Z; again for Z to A; a third time
+// restores the original order.
+const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+document.querySelectorAll('table').forEach((table) => {
+  const body = table.tBodies[0];
+  const heads = table.tHead && table.tHead.rows[0] ? Array.from(table.tHead.rows[0].cells) : [];
+  if (!body || !heads.length) return;
+  Array.from(body.rows).forEach((row, i) => { row.dataset.order = i; });
+  heads.forEach((th, col) => {
+    th.classList.add('sortable');
+    th.tabIndex = 0;
+    const sort = () => {
+      const next = th.getAttribute('aria-sort') === 'ascending' ? 'descending' : th.getAttribute('aria-sort') === 'descending' ? '' : 'ascending';
+      heads.forEach((h) => h.removeAttribute('aria-sort'));
+      if (next) th.setAttribute('aria-sort', next);
+      const dir = next === 'descending' ? -1 : 1;
+      const text = (row) => (row.cells[col] ? row.cells[col].textContent.trim() : '');
+      Array.from(body.rows)
+        .sort((a, b) => next ? dir * collator.compare(text(a), text(b)) : a.dataset.order - b.dataset.order)
+        .forEach((row) => body.append(row));
+    };
+    th.addEventListener('click', sort);
+    th.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sort(); } });
+  });
 });

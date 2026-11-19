@@ -166,7 +166,8 @@ REF = re.compile(r'<b>(-[A-Za-z0-9]|[A-Z][A-Z0-9_ ]*[A-Z0-9])</b>|<code class="F
 def link_refs(frag):
     """Link a bold or .Fl flag (-y), a bold ENV_VAR or ENV_VAR=value and a bold SECTION NAME to where it is defined."""
     ids = set(re.findall(r'<p class="Pp" id="((?:opt-[A-Za-z0-9]+)|[A-Z][A-Z0-9_]*)"', frag))
-    sections = {t: slug(t) for t in (re.sub(r"<[^>]+>", "", h).strip()
+    # mandoc wraps a long heading over two lines ("CHOICE\nPROMPTS"): join it so "CHOICE PROMPTS" matches
+    sections = {t: slug(t) for t in (" ".join(re.sub(r"<[^>]+>", "", h).split())
                                       for h in re.findall(r'<h1 class="Sh"[^>]*>(.*?)</h1>', frag, re.DOTALL))}
 
     def sub(m):

@@ -155,6 +155,9 @@ h3.sub { font: 600 19px/1.25 var(--serif); margin: 32px 0 12px; }
 table { width: 100%; border-collapse: collapse; font-size: 15px; }
 th, td { text-align: left; padding: 11px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
 th { font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+th.sortable { cursor: pointer; user-select: none; }
+th[aria-sort="ascending"]::after { content: " \2191"; }
+th[aria-sort="descending"]::after { content: " \2193"; }
 tr:last-child td { border-bottom: 0; }
 td:first-child { white-space: nowrap; }
 

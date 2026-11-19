@@ -126,7 +126,7 @@ With `-a man.html`, an inline code span that is exactly `ENV_VAR` or `ENV_VAR=va
 | --- | --- | --- |
 | `.lede` | first paragraph of a section | muted intro text |
 | `.cards`, `.card`, `.wide` | card grid and cards | panel with a border and rounded corners |
-| `.table-wrap` | wrapper of every table | bordered, scrolls sideways when narrow |
+| `.table-wrap` | wrapper of every table | bordered, scrolls sideways when narrow; a click on a header sorts the rows A to Z (again Z to A, a third time the original order) |
 | `.sub` | `h3` outside cards | sub heading |
 | `.codeblock`, `.copy`, `.c`, `.line` | code block; `.plain` has no Copy button | dark terminal panel (see script.js) |
 | `.tags`, `.new` | pill row, highlighted pill | outlined pills, accent filled |
